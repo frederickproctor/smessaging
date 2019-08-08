@@ -30,13 +30,13 @@ static int client_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_a
   switch (identifier) {
   case SMSG_CODE_REPORT_TEST:
     if (0 != smsg_message_to_report_test(smsg_inbuf, &report_test)) {
-      dprintf(SMSG_DEBUG_MSG, "Bad message for type: %d\n", (int) identifier);
+      smsg_print_debug(SMSG_DEBUG_MSG, "Bad message for type: %d\n", (int) identifier);
     }
     printf("%d %f\n", (int) report_test.count, (double) report_test.time);
     break;
 
   default:
-    dprintf(SMSG_DEBUG_MSG, "Unknown message type: %d\n", (int) identifier);
+    smsg_print_debug(SMSG_DEBUG_MSG, "Unknown message type: %d\n", (int) identifier);
     break;
   } /* switch (identifier) */
 
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
       break;
     }
   }
-  dprintf(SMSG_DEBUG_CFG, "Found component on %s port %d\n", ulapi_address_to_hostname(address), (int) port);
+  smsg_print_debug(SMSG_DEBUG_CFG, "Found component on %s port %d\n", ulapi_address_to_hostname(address), (int) port);
 
   /* now connect as a client */
   /* FIXME -- have integer address, need char[] host */
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     smsg_outbuflen = smsg_query_test_to_message(&query_test, smsg_outbuf);
     writebuflen = serdes_encode((char *) smsg_outbuf, smsg_outbuflen, writebuf, sizeof(writebuf));
     if (0 > ulapi_socket_write(myclient_id, writebuf, writebuflen)) {
-      dprintf(SMSG_DEBUG_CFG, "Reporter disconnected\n");
+      smsg_print_debug(SMSG_DEBUG_CFG, "Reporter disconnected\n");
       break;
     }
   }

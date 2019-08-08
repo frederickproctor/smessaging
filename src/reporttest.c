@@ -55,7 +55,7 @@ static int client_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_a
     break;
 
   default:
-    dprintf(SMSG_DEBUG_MSG, "Unknown message type: %d\n", (int) identifier);
+    smsg_print_debug(SMSG_DEBUG_MSG, "Unknown message type: %d\n", (int) identifier);
     break;
   } /* switch (identifier) */
 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Can't register component\n");
     return 1;
   }
-  dprintf(SMSG_DEBUG_CFG, "Registered on %s port %d\n", ulapi_address_to_hostname(address), (int) port);
+  smsg_print_debug(SMSG_DEBUG_CFG, "Registered on %s port %d\n", ulapi_address_to_hostname(address), (int) port);
 
   /* now run a server */
   myserver_id = ulapi_socket_get_server_id(port);
@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
 
   /* and wait for connections */
   for (;;) {
-    dprintf(SMSG_DEBUG_CFG, "Waiting for client connection...\n");
+    smsg_print_debug(SMSG_DEBUG_CFG, "Waiting for client connection...\n");
     connection_id = ulapi_socket_get_connection_id(myserver_id);
     if (0 != smsg_start_message_handler(client_message_handler, connection_id, NULL, NULL)) {
       smsg_print_debug(SMSG_DEBUG_CFG, "Can't spawn server thread\n");

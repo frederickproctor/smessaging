@@ -44,7 +44,7 @@ static int nodemgr_broadcast_handler(smsg_byte *smsg_inbuf, int broadcastee_fd, 
   shared_fd = *((shared_fd_t *) handler_args);
   identifier = smsg_message_identifier(smsg_inbuf);
 
-  dprintf(SMSG_DEBUG_MSG, "Got broadcast message %d\n", (int) identifier);
+  smsg_print_debug(SMSG_DEBUG_MSG, "Got broadcast message %d\n", (int) identifier);
 
   /* handle message */
   switch (identifier) {
@@ -66,7 +66,7 @@ static int nodemgr_broadcast_handler(smsg_byte *smsg_inbuf, int broadcastee_fd, 
 	ulapi_mutex_take(shared_fd.mutex);
 	ulapi_socket_write(shared_fd.fd, writebuf, writebuflen);
 	ulapi_mutex_give(shared_fd.mutex);
-	dprintf(SMSG_DEBUG_BCAST, "Broadcasting component %d %d %d %d %s %d\n", 
+	smsg_print_debug(SMSG_DEBUG_BCAST, "Broadcasting component %d %d %d %d %s %d\n", 
 		(int) component.component_id,
 		(int) component.instance_id,
 		(int) component.node_id,
@@ -89,7 +89,7 @@ static int nodemgr_broadcast_handler(smsg_byte *smsg_inbuf, int broadcastee_fd, 
     component.fd = -1;
     /* ignore component.fd */
     if (0 > db_find(&db, &component)) {
-      dprintf(SMSG_DEBUG_BCAST, "News on component %d %d %d %d %s %d\n", 
+      smsg_print_debug(SMSG_DEBUG_BCAST, "News on component %d %d %d %d %s %d\n", 
 	      (int) component.component_id,
 	      (int) component.instance_id,
 	      (int) component.node_id,
@@ -100,7 +100,7 @@ static int nodemgr_broadcast_handler(smsg_byte *smsg_inbuf, int broadcastee_fd, 
 	smsg_print_debug(SMSG_DEBUG_BCAST, "Can't update db with broadcast entry\n");
       }
     } else {
-      dprintf(SMSG_DEBUG_BCAST, "This one is my component\n");
+      smsg_print_debug(SMSG_DEBUG_BCAST, "This one is my component\n");
     }
     break;
 
@@ -131,7 +131,7 @@ static int nodemgr_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_
   shared_fd = *((shared_fd_t *) handler_args);
   identifier = smsg_message_identifier(smsg_inbuf);
 
-  dprintf(SMSG_DEBUG_MSG, "Got node message %d\n", (int) identifier);
+  smsg_print_debug(SMSG_DEBUG_MSG, "Got node message %d\n", (int) identifier);
 
   /* handle message */
   switch (identifier) {
@@ -141,10 +141,10 @@ static int nodemgr_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_
     component.component_id = request_dynreg.component_id;
     component.instance_id = request_dynreg.instance_id;
     if (request_dynreg.node_id != smsg_get_node_id()) {
-      dprintf(SMSG_DEBUG_REG, "Component node id %d doesn't match node manager node id %d\n", (int) request_dynreg.node_id, (int) smsg_get_node_id());
+      smsg_print_debug(SMSG_DEBUG_REG, "Component node id %d doesn't match node manager node id %d\n", (int) request_dynreg.node_id, (int) smsg_get_node_id());
     }
     if (request_dynreg.subsystem_id != smsg_get_subsystem_id()) {
-      dprintf(SMSG_DEBUG_REG, "Component subsystem id %d doesn't match node manager subsystem id %d\n", (int) request_dynreg.subsystem_id, (int) smsg_get_subsystem_id());
+      smsg_print_debug(SMSG_DEBUG_REG, "Component subsystem id %d doesn't match node manager subsystem id %d\n", (int) request_dynreg.subsystem_id, (int) smsg_get_subsystem_id());
     }
     component.node_id = request_dynreg.node_id;
     component.subsystem_id = request_dynreg.subsystem_id;
@@ -166,7 +166,7 @@ static int nodemgr_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_
       reply_dynreg.address = 0;
       reply_dynreg.port = 0;
     }
-    dprintf(SMSG_DEBUG_REG, "Replying with %s port %d\n", ulapi_address_to_hostname(reply_dynreg.address), reply_dynreg.port);
+    smsg_print_debug(SMSG_DEBUG_REG, "Replying with %s port %d\n", ulapi_address_to_hostname(reply_dynreg.address), reply_dynreg.port);
     reply_dynreg.sequence_number = 1;
     smsg_outbuflen = smsg_reply_dynreg_to_message(&reply_dynreg, smsg_outbuf);
     writebuflen = serdes_encode((char *) smsg_outbuf, smsg_outbuflen, writebuf, sizeof(writebuf));
@@ -176,7 +176,7 @@ static int nodemgr_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_
   case SMSG_CODE_REPLY_DYNREG:
   case SMSG_CODE_REPORT_DYNREG:
     /* we send these, shouldn't receive them */
-    dprintf(SMSG_DEBUG_REG, "Unexpected message type: %d\n", (int) identifier);
+    smsg_print_debug(SMSG_DEBUG_REG, "Unexpected message type: %d\n", (int) identifier);
     break;
 
   case SMSG_CODE_QUERY_DYNREG:
@@ -189,7 +189,7 @@ static int nodemgr_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_
     if (0 > db_find(&db, &component)) {
       /* can't find this component, so ask our other node manager
 	 brothers to send us news */
-      dprintf(SMSG_DEBUG_REG, "No record of component %d %d %d %d, broadcasting for news\n", (int) component.component_id, (int) component.instance_id, (int) component.node_id, (int) component.subsystem_id);
+      smsg_print_debug(SMSG_DEBUG_REG, "No record of component %d %d %d %d, broadcasting for news\n", (int) component.component_id, (int) component.instance_id, (int) component.node_id, (int) component.subsystem_id);
 
       query_allreg.sequence_number = 1;
       smsg_outbuflen = smsg_query_allreg_to_message(&query_allreg, smsg_outbuf);
@@ -217,7 +217,7 @@ static int nodemgr_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_
     break;
 
   default:
-    dprintf(SMSG_DEBUG_MSG, "Unknown message type: %d\n", (int) identifier);
+    smsg_print_debug(SMSG_DEBUG_MSG, "Unknown message type: %d\n", (int) identifier);
     break;
   } /* switch (identifier) */
 
@@ -287,14 +287,14 @@ int main(int argc, char *argv[])
     smsg_print_debug(SMSG_DEBUG_CFG, "Can't get host address\n");
     return 1;
   }
-  dprintf(SMSG_DEBUG_CFG, "Host address is %s\n", ulapi_address_to_hostname(addr));
+  smsg_print_debug(SMSG_DEBUG_CFG, "Host address is %s\n", ulapi_address_to_hostname(addr));
 
   socket_fd = ulapi_socket_get_server_id(port);
   if (socket_fd < 0) {
     smsg_print_debug(SMSG_DEBUG_CFG, "Can't get socket fd\n");
     return 1;
   }
-  dprintf(SMSG_DEBUG_CFG, "Got socket fd %d\n", socket_fd);
+  smsg_print_debug(SMSG_DEBUG_CFG, "Got socket fd %d\n", socket_fd);
 
   if (0 != db_init(&db)) {
     smsg_print_debug(SMSG_DEBUG_CFG, "Can't allocate database\n");
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
     smsg_print_debug(SMSG_DEBUG_CFG, "Can't get broadcaster fd\n");
     return 1;
   }
-  dprintf(SMSG_DEBUG_CFG, "Got broadcaster fd %d\n", broadcaster_fd);
+  smsg_print_debug(SMSG_DEBUG_CFG, "Got broadcaster fd %d\n", broadcaster_fd);
   broadcaster_mutex = ulapi_mutex_new(1);
   shared_fd.fd = broadcaster_fd;
   shared_fd.mutex = broadcaster_mutex;
@@ -323,28 +323,28 @@ int main(int argc, char *argv[])
     smsg_print_debug(SMSG_DEBUG_CFG, "Can't get broadcastee fd\n");
     return 1;
   }
-  dprintf(SMSG_DEBUG_CFG, "Got broadcastee fd %d\n", broadcastee_fd);
+  smsg_print_debug(SMSG_DEBUG_CFG, "Got broadcastee fd %d\n", broadcastee_fd);
 
   if (0 != smsg_start_message_handler(nodemgr_broadcast_handler, broadcastee_fd, &shared_fd, NULL)) {
     smsg_print_debug(SMSG_DEBUG_CFG, "Can't spawn broadcast thread\n");
     return 1;
   }
-  dprintf(SMSG_DEBUG_CFG, "Spawning broadcast thread on fd %d\n", broadcastee_fd);
+  smsg_print_debug(SMSG_DEBUG_CFG, "Spawning broadcast thread on fd %d\n", broadcastee_fd);
 
   for (;;) {
-    dprintf(SMSG_DEBUG_CFG, "Waiting for client connection on fd %d...\n", socket_fd);
+    smsg_print_debug(SMSG_DEBUG_CFG, "Waiting for client connection on fd %d...\n", socket_fd);
     client_fd = ulapi_socket_get_connection_id(socket_fd);
     if (client_fd < 0) {
       smsg_print_debug(SMSG_DEBUG_CFG, "Can't get client connection\n");
       return 1;
     }
-    dprintf(SMSG_DEBUG_CFG, "Got a client connection on fd %d\n", client_fd);
+    smsg_print_debug(SMSG_DEBUG_CFG, "Got a client connection on fd %d\n", client_fd);
 
     if (0 != smsg_start_message_handler(nodemgr_message_handler, client_fd, &shared_fd, NULL)) {
       smsg_print_debug(SMSG_DEBUG_CFG, "Can't spawn server thread\n");
       return 1;
     }
-    dprintf(SMSG_DEBUG_CFG, "Spawning a server thread on client fd %d\n", client_fd);
+    smsg_print_debug(SMSG_DEBUG_CFG, "Spawning a server thread on client fd %d\n", client_fd);
   }
 
   return 0;
