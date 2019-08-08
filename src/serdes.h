@@ -37,9 +37,9 @@ typedef struct {
   char * decbad;	/* where we can't write our output */
   enum {
     NOMSG = 0,			/* not in a message */
-    SOM1,			/* saw a PAD char while in NOMSG */
-    SOM2,			/* saw SOM char after PAD */
-    MSG,		      /* saw PAD char after SOM, now in msg */
+    INSOM1,			/* saw a PAD char while in NOMSG */
+    INSOM2,			/* saw SOM char after PAD */
+    INMSG,		      /* saw PAD char after SOM, now in msg */
     INPAD,
     INSOM,		 /* saw a SOM char in msg, supress the first*/
     INEOM,

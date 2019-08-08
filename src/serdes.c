@@ -199,24 +199,24 @@ serdes_decode(char * encbuf, /* the encoded message fragment*/
     switch (st->state) {
     case NOMSG:
       if (PAD == ch) {
-	st->state = SOM1;
+	st->state = INSOM1;
       }
       break;
-    case SOM1:
+    case INSOM1:
       if (SOM == ch) {
-	st->state = SOM2;
+	st->state = INSOM2;
       } else {
 	st->state = NOMSG;
       }
       break;
-    case SOM2:
+    case INSOM2:
       if (PAD == ch) {
-	st->state = MSG;
+	st->state = INMSG;
       } else {
 	st->state = NOMSG;
       }
       break;
-    case MSG:
+    case INMSG:
       if (PAD == ch) {
 	st->state = INPAD;
       } else {
@@ -234,7 +234,7 @@ serdes_decode(char * encbuf, /* the encoded message fragment*/
       } else {
 	*(st->decptr)++ = PAD;
 	*(st->decptr)++ = ch;
-	st->state = MSG;
+	st->state = INMSG;
       }
       break;
     case INSOM:
@@ -248,7 +248,7 @@ serdes_decode(char * encbuf, /* the encoded message fragment*/
 	*(st->decptr++) = PAD;
 	while (st->count-- > 0) *(st->decptr++) = SOM;
 	*(st->decptr++) = ch;
-	st->state = MSG;
+	st->state = INMSG;
       }
       break;
     case INEOM1:
@@ -265,7 +265,7 @@ serdes_decode(char * encbuf, /* the encoded message fragment*/
 	*(st->decptr++) = PAD;
 	*(st->decptr++) = EOM;
 	*(st->decptr++) = ch;
-	st->state = MSG;
+	st->state = INMSG;
       }
       break;
     case INEOM2:
@@ -279,7 +279,7 @@ serdes_decode(char * encbuf, /* the encoded message fragment*/
 	*(st->decptr++) = PAD;
 	while (st->count-- > 0) *(st->decptr++) = EOM;
 	*(st->decptr++) = ch;
-	st->state = MSG;
+	st->state = INMSG;
       }
       break;
     default:
