@@ -22,7 +22,6 @@
 #include <stdarg.h>		/* va_list,start,end */
 #include <string.h>		/* strncpy, strerror */
 #include <errno.h>		/* errno */
-#include <getopt.h>
 #include <ulapi.h>
 #include "smsg.h"
 
@@ -84,7 +83,7 @@ int main(int argc, char *argv[])
   smsg_byte subsystem_id = 1;
 
   for (opterr = 0;;) {
-    option = getopt(argc, argv, ":c:i:n:s:");
+    option = ulapi_getopt(argc, argv, ":c:i:n:s:");
     if (option == -1)
       break;
 

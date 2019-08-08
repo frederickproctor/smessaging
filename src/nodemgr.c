@@ -17,7 +17,6 @@
 #include <stdlib.h>		/* atoi */
 #include <string.h>		/* strcmp */
 #include <ulapi.h>
-#include <getopt.h>
 #include "serdes.h"
 #include "smsg.h"
 
@@ -247,7 +246,7 @@ int main(int argc, char *argv[])
   smsg_set_debug_mask(SMSG_DEBUG_ALL);
 
   for (opterr = 0;;) {
-    option = getopt(argc, argv, ":n:s:d:");
+    option = ulapi_getopt(argc, argv, ":n:s:d:");
     if (option == -1)
       break;
 
