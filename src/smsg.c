@@ -21,6 +21,27 @@
 #include "serdes.h"		/* encoding, decoding */
 #include "smsg.h"
 
+const char *smsg_id_to_string(int id) {
+  switch (id) {
+  case SMSG_CODE_REQUEST_DYNREG: return "REQUEST_DYNREG";
+  case SMSG_CODE_REPLY_DYNREG: return "REPLY_DYNREG";
+  case SMSG_CODE_QUERY_DYNREG: return "QUERY_DYNREG";
+  case SMSG_CODE_REPORT_DYNREG: return "REPORT_DYNREG";
+  case SMSG_CODE_QUERY_ALLREG: return "QUERY_ALLREG";
+  case SMSG_CODE_REPORT_ALLREG: return "REPORT_ALLREG";
+  case SMSG_CODE_OPEN_CLIENT_CONNECTION: return "OPEN_CLIENT_CONNECTION";
+  case SMSG_CODE_RETURN_CLIENT_CONNECTION: return "RETURN_CLIENT_CONNECTION";
+  case SMSG_CODE_CLOSE_CLIENT_CONNECTION: return "CLOSE_CLIENT_CONNECTION";
+  case SMSG_CODE_OPEN_SERVER_CONNECTION: return "OPEN_SERVER_CONNECTION";
+  case SMSG_CODE_RETURN_SERVER_CONNECTION: return "RETURN_SERVER_CONNECTION";
+  case SMSG_CODE_CLOSE_SERVER_CONNECTION: return "CLOSE_SERVER_CONNECTION";
+  case SMSG_CODE_QUERY_TEST: return "QUERY_TEST";
+  case SMSG_CODE_REPORT_TEST: return "REPORT_TEST";
+  default: return "?";
+  }
+  return "?";
+}
+
 int smsg_message_to_request_dynreg(smsg_byte * msg, smsg_request_dynreg_t * smsg_msg)
 {
   T_FR_B(&smsg_msg->identifier, msg);

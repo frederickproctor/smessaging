@@ -44,7 +44,7 @@ static int nodemgr_broadcast_handler(smsg_byte *smsg_inbuf, int broadcastee_fd, 
   shared_fd = *((shared_fd_t *) handler_args);
   identifier = smsg_message_identifier(smsg_inbuf);
 
-  smsg_print_debug(SMSG_DEBUG_MSG, "Got broadcast message %d\n", (int) identifier);
+  smsg_print_debug(SMSG_DEBUG_MSG, "Got broadcast message %s\n", smsg_id_to_string(identifier));
 
   /* handle message */
   switch (identifier) {
@@ -131,7 +131,7 @@ static int nodemgr_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_
   shared_fd = *((shared_fd_t *) handler_args);
   identifier = smsg_message_identifier(smsg_inbuf);
 
-  smsg_print_debug(SMSG_DEBUG_MSG, "Got node message %d\n", (int) identifier);
+  smsg_print_debug(SMSG_DEBUG_MSG, "Got node message %s\n", smsg_id_to_string(identifier));
 
   /* handle message */
   switch (identifier) {
@@ -225,14 +225,28 @@ static int nodemgr_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_
 }
 
 /*
-  Usage: nodemgr
-  [-n <node id>]
-  [-s <subsystem id>]
+  Usage: nodemgr <options>, which are:
+  -h                : print help
+  -d <debug mask>   : set debug printing level
+  -n <node id>      : set the node id, default 1
+  -s <subsystem id> : set the subsystem id, default 1
 */
+
+static void print_help(void)
+{
+  printf("Usage: nodemgr <options>, which are:\n");
+  printf("-h                : print help\n");
+  printf("-d <debug mask>   : set debug printing level\n");
+  printf("-n <node id>      : set the node id, default 1\n");
+  printf("-s <subsystem id> : set the subsystem id, default 1\n");
+
+  return;
+}
 
 int main(int argc, char *argv[])
 {
   int option;
+  int debug_mask = 0;
   smsg_addr addr;
   int port = SMSG_PORT;
   int socket_fd;
@@ -246,7 +260,7 @@ int main(int argc, char *argv[])
   smsg_set_debug_mask(SMSG_DEBUG_ALL);
 
   for (opterr = 0;;) {
-    option = ulapi_getopt(argc, argv, ":n:s:d:");
+    option = ulapi_getopt(argc, argv, ":n:s:d:h");
     if (option == -1)
       break;
 
@@ -259,11 +273,16 @@ int main(int argc, char *argv[])
       smsg_set_subsystem_id((smsg_byte) atoi(optarg));
       break;
 
+    case 'h':
+      print_help();
+      return 0;
+      break;
+
     case 'd':
-      if (! strcmp(optarg, "all"))
-	smsg_set_debug_mask(SMSG_DEBUG_ALL);
-      else
-	smsg_set_debug_mask(strtoul(optarg, NULL, 0));
+      if (1 != sscanf(optarg, "%i", &debug_mask)) {
+	fprintf(stderr, "bad value for -d: %s\n", optarg);
+	return 1;
+      }
       break;
 
     case ':':
@@ -281,6 +300,9 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Extra non-option characters: %s\n", argv[optind]);
     return 1;
   }
+
+  smsg_set_debug_name("Nodemgr");
+  smsg_set_debug_mask(debug_mask);
 
   addr = ulapi_get_host_address();
   if (0 == addr) {
@@ -307,7 +329,7 @@ int main(int argc, char *argv[])
      request to broadcast out its components */
   broadcaster_fd = ulapi_socket_get_broadcaster_id(port);
   if (broadcaster_fd < 0) {
-    smsg_print_debug(SMSG_DEBUG_CFG, "Can't get broadcaster fd\n");
+    smsg_print_debug(SMSG_DEBUG_CFG, "Can't get broadcaster fd on port %d\n", (int) port);
     return 1;
   }
   smsg_print_debug(SMSG_DEBUG_CFG, "Got broadcaster fd %d\n", broadcaster_fd);

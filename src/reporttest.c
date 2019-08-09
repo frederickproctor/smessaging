@@ -55,7 +55,7 @@ static int client_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_a
     break;
 
   default:
-    smsg_print_debug(SMSG_DEBUG_MSG, "Unknown message type: %d\n", (int) identifier);
+    smsg_print_debug(SMSG_DEBUG_MSG, "Unknown message type: %s\n", smsg_id_to_string(identifier));
     break;
   } /* switch (identifier) */
 
@@ -63,16 +63,32 @@ static int client_message_handler(smsg_byte *smsg_inbuf, int fd, void *handler_a
 }
 
 /* 
-   Usage: reporttest
-   [-c <component id>]
-   [-i <instance id>] 
-   [-n <node id>]
-   [-s <subsystem id>]
+   Usage: reporttest <options>, which are:
+   -h                : print help
+   -d <debug mask>   : set debug printing level
+   -c <component id> : set the component id, default 1
+   -i <instance id>  : set the instance id, default 1
+   -n <node id>      : set the node id, default 1
+   -s <subsystem id> : set the subsystem id, default 1
 */
+
+static void print_help(void)
+{
+  printf("Usage: reporttest <options>, which are:\n");
+  printf("-h                : print help\n");
+  printf("-d <debug mask>   : set debug printing level\n");
+  printf("-c <component id> : set the component id, default 1\n");
+  printf("-i <instance id>  : set the instance id, default 1\n");
+  printf("-n <node id>      : set the node id, default 1\n");
+  printf("-s <subsystem id> : set the subsystem id, default 1\n");
+
+  return;
+}
 
 int main(int argc, char *argv[])
 {
   int option;
+  int debug_mask = 0;
   smsg_addr address;
   smsg_port port;
   ulapi_integer myserver_id;
@@ -83,7 +99,7 @@ int main(int argc, char *argv[])
   smsg_byte subsystem_id = 1;
 
   for (opterr = 0;;) {
-    option = ulapi_getopt(argc, argv, ":c:i:n:s:");
+    option = ulapi_getopt(argc, argv, ":c:i:n:s:d:h");
     if (option == -1)
       break;
 
@@ -104,6 +120,18 @@ int main(int argc, char *argv[])
       subsystem_id = atoi(optarg);
       break;
 
+    case 'h':
+      print_help();
+      return 0;
+      break;
+
+    case 'd':
+      if (1 != sscanf(optarg, "%i", &debug_mask)) {
+	fprintf(stderr, "bad value for -d: %s\n", optarg);
+	return 1;
+      }
+      break;
+
     case ':':
       fprintf(stderr, "Missing value for -%c\n", optopt);
       return 1;
@@ -121,7 +149,7 @@ int main(int argc, char *argv[])
   }
 
   smsg_set_debug_name("Reporttest");
-  smsg_set_debug_mask(SMSG_DEBUG_ALL);
+  smsg_set_debug_mask(debug_mask);
 
   if (0 != smsg_register_component(-1, component_id, instance_id, node_id, subsystem_id, &address, &port)) {
     fprintf(stderr, "Can't register component\n");

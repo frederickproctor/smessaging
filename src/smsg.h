@@ -69,6 +69,8 @@ enum {
   SMSG_CODE_REPORT_TEST = 14
 };
 
+extern const char *smsg_id_to_string(int id);
+
 /*
   This is unsigned so that identifiers can be set and compared to
   numbers in the range of 128 to 255 without compiler warnings.
