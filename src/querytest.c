@@ -137,6 +137,7 @@ int main(int argc, char *argv[])
   smsg_set_debug_mask(debug_mask);
 
   for (;; ulapi_sleep(1)) {
+    smsg_print_debug(SMGS_DEBUG_CFG, "Looking for component %d %d %d %d\n", component_id, instance_id, node_id, subsystem_id);
     if (0 == smsg_find_component(-1, component_id, instance_id, node_id, subsystem_id, &address, &port)) {
       break;
     }
